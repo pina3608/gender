@@ -9,8 +9,9 @@
     h2 { margin-top: 0; }
     section { display: none; }
     section.active { display: block; }
-    input, button { font-size: 1rem; padding: 0.5rem; }
-    button { cursor: pointer; }
+    .puzzle-grid { display: grid; grid-template-columns: repeat(3, 150px); grid-template-rows: repeat(3, 150px); gap: 2px; margin: 1rem 0; }
+    .piece { width: 150px; height: 150px; background-image: url('https://www.doctoraspino.es/uploads/app/1127/elements/1/435image1609159411.pngoptimized.jpg'); background-size: 450px 450px; cursor: pointer; border: 1px solid #ccc; box-sizing: border-box; }
+    .empty { background: #f5f5f5; cursor: default; }
     .memory-grid { display: grid; grid-template-columns: repeat(4, 100px); grid-gap: 1rem; justify-content: center; margin: 1rem 0; }
     .card { width: 100px; height: 100px; background: #ccc; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; border-radius: 8px; user-select: none; }
     .card.flipped { background: #fff; }
@@ -27,15 +28,13 @@
 </head>
 <body>
   <div class="container">
-    <!-- Paso 1 -->
     <section id="step1" class="active">
-      <h2>Paso 1: Acertijo numérico</h2>
-      <p>Si a la posición de la letra C (3) le sumas el número de meses de embarazo (9), ¿qué obtienes?</p>
-      <input type="number" id="ans1" placeholder="Tu respuesta">
-      <button id="btn1">Comprobar</button>
+      <h2>Paso 1: Puzzle de la ecografía</h2>
+      <p>Recompón la imagen de la ecografía:</p>
+      <div id="puzzle1" class="puzzle-grid"></div>
+      <button id="btn1" style="display:none;">Siguiente</button>
     </section>
 
-    <!-- Paso 2: Juego de memoria -->
     <section id="step2">
       <h2>Paso 2: Juego de memoria</h2>
       <p>Encuentra todas las parejas de iconos de bebé:</p>
@@ -43,38 +42,29 @@
       <button id="btn2" style="display:none;">Siguiente</button>
     </section>
 
-    <!-- Paso 3: Puzzle lógico de edades -->
     <section id="step3">
       <h2>Paso 3: Puzzle lógico de edades</h2>
       <p>En una familia:<br>
-      - Kona tiene 2 años más que Kai<br>
-      - Kai tiene 1 año más que Luna<br>
-      Si la suma de sus edades es 28, ¿qué edad tiene Kai?</p>
-      <input type="number" id="ans3" placeholder="Edad de Bea">
+      - Kona tiene 2 años más que Luna<br>
+      - Luna tiene 1 año más que Kai<br>
+      Si la suma de sus edades es 28, ¿qué edad tiene Luna?</p>
+      <input type="number" id="ans3" placeholder="Edad de Luna">
       <button id="btn3">Comprobar</button>
     </section>
 
-    <!-- Paso 4: Mezcla de color discreta con 6 valores -->
     <section id="step4">
       <h2>Paso 4: Mezcla de color</h2>
-      <p>Recrea el color indicado moviendo cada deslizador (0–5):</p>
-      <div>
-        <span>Color objetivo:</span>
-        <div id="rgb-target"></div>
-      </div>
-      <div>
-        <span>Tu mezcla:</span>
-        <div id="rgb-preview"></div>
-      </div>
+      <p>Recrea el color indicado moviendo cada deslizador (0–4):</p>
+      <div><span>Color objetivo:</span><div id="rgb-target"></div></div>
+      <div><span>Tu mezcla:</span><div id="rgb-preview"></div></div>
       <div class="slider-group">
-        <label>R (0–5): <input type="range" id="r" min="0" max="5" step="1"></label>
-        <label>G (0–5): <input type="range" id="g" min="0" max="5" step="1"></label>
-        <label>B (0–5): <input type="range" id="b" min="0" max="5" step="1"></label>
+        <label>R (0–4): <input type="range" id="r" min="0" max="4" step="1"></label>
+        <label>G (0–4): <input type="range" id="g" min="0" max="4" step="1"></label>
+        <label>B (0–4): <input type="range" id="b" min="0" max="4" step="1"></label>
       </div>
       <button id="btn4">Comprobar color</button>
     </section>
 
-    <!-- Paso 5: Ahorcado -->
     <section id="step5">
       <h2>Paso 5: Juego del Ahorcado</h2>
       <p>Descubre la palabra clave:</p>
@@ -88,53 +78,82 @@
   <script>
     const gender = "niña";
     const originalColor = gender === "niña" ? "#FFC0CB" : "#ADD8E6";
-    const upperGender = gender.toUpperCase();
-    const plain = gender.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const plain = gender.toUpperCase();
+
     function showStep(n) {
-      for (let i = 1; i <= 5; i++) document.getElementById('step' + i).classList.toggle('active', i === n);
+      for (let i = 1; i <= 5; i++) document.getElementById('step'+i).classList.toggle('active', i===n);
     }
-    // Paso 1
-    document.getElementById('btn1').onclick = () => {
-      if (+document.getElementById('ans1').value === 12) { showStep(2); initMemory(); }
-      else alert('Incorrecto. Inténtalo de nuevo.');
-    };
-    // Paso 2: Juego de memoria
-    const icons = ['🍼', '👶', '🎀', '🚗', '🧸', '👟'];
-    let cards = [], firstCard = null, lock = false;
-    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }}
-    function initMemory() { cards = icons.concat(icons); shuffle(cards); const grid = document.getElementById('memory'); grid.innerHTML = ''; cards.forEach(icon => { const card = document.createElement('div'); card.className = 'card'; card.dataset.icon = icon; card.onclick = () => flipCard(card); grid.appendChild(card); }); }
-    function flipCard(card) { if (lock || card.classList.contains('flipped')) return; card.classList.add('flipped'); card.textContent = card.dataset.icon; if (!firstCard) firstCard = card; else { lock = true; if (card.dataset.icon === firstCard.dataset.icon) { setTimeout(() => { card.classList.add('matched'); firstCard.classList.add('matched'); resetMemory(); }, 500); } else { setTimeout(() => { card.classList.remove('flipped'); firstCard.classList.remove('flipped'); card.textContent = ''; firstCard.textContent = ''; resetMemory(); }, 800); } }}
-    function resetMemory() { if (document.querySelectorAll('.matched').length === cards.length) document.getElementById('btn2').style.display = 'inline-block'; [firstCard, lock] = [null, false]; }
-    document.getElementById('btn2').onclick = () => showStep(3);
-    // Paso 3: Puzzle lógico de edades
-    document.getElementById('btn3').onclick = () => {
-      const edad = +document.getElementById('ans3').value;
-      if (edad === 9) { showStep(4); } else { alert('Incorrecto. Inténtalo de nuevo.'); }
-    };
-    // Paso 4: Mezcla de color
-    const rS = document.getElementById('r'), gS = document.getElementById('g'), bS = document.getElementById('b');
-    const preview = document.getElementById('rgb-preview'), target = document.getElementById('rgb-target');
-    function hexToIndex(hex) { return Math.round(parseInt(hex, 16) / 255 * 5); }
-    const tR = hexToIndex(originalColor.substr(1, 2)), tG = hexToIndex(originalColor.substr(3, 2)), tB = hexToIndex(originalColor.substr(5, 2));
-    const dR = Math.round(tR / 5 * 255), dG = Math.round(tG / 5 * 255), dB = Math.round(tB / 5 * 255);
-    target.style.background = `rgb(${dR},${dG},${dB})`;
-    function updatePreview() { const r = Math.round((rS.value / 5) * 255), g = Math.round((gS.value / 5) * 255), b = Math.round((bS.value / 5) * 255); preview.style.background = `rgb(${r},${g},${b})`; }
-    [rS, gS, bS].forEach(sl => sl.oninput = updatePreview);
-    document.getElementById('btn4').onclick = () => { if (+rS.value === tR && +gS.value === tG && +bS.value === tB) { showStep(5); initHangman(); } else alert('Color incorrecto.'); };
-    // Paso 5: Ahorcado
-    const maxTries = 10; let tries, leftWord;
-    function initHangman() { tries = 0; leftWord = upperGender.split(''); document.getElementById('tries').textContent = maxTries - tries; const disp = leftWord.map(_ => '_'); document.getElementById('wordDisplay').textContent = disp.join(' ');
-      const letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''); const btns = document.getElementById('letterButtons'); btns.innerHTML = '';
-      letters.forEach(l => { const b = document.createElement('button'); b.textContent = l; b.onclick = () => guess(l, b); btns.appendChild(b); }); }
-    function guess(letter, button) { button.disabled = true; let found = false; Array.from(document.getElementById('wordDisplay').textContent.replace(/ /g, '')).forEach((c,i) => { if (leftWord[i] === letter) { found = true; } });
-      let display = document.getElementById('wordDisplay').textContent.split(' ');
-      leftWord.forEach((l,i) => { if (l === letter) display[i] = letter; });
-      document.getElementById('wordDisplay').textContent = display.join(' ');
-      if (!found) { tries++; document.getElementById('tries').textContent = maxTries - tries; }
-      checkEnd(); }
-    function checkEnd() { const display = document.getElementById('wordDisplay').textContent.replace(/ /g, ''); if (display === upperGender) revealWin(); else if (tries >= maxTries) revealLose(); }
-    function revealWin() { document.getElementById('reveal').textContent = `¡Bravo! Es una ${gender.toUpperCase()}!`; document.getElementById('reveal').style.color = originalColor; }
-    function revealLose() { document.getElementById('reveal').textContent = `Se acabaron los intentos. Es una ${gender.toUpperCase()}.`; document.getElementById('reveal').style.color = originalColor; }
+
+    const size1 = 3, total1 = size1*size1;
+    let pieces1 = [];
+    function setupPuzzle1() {
+      pieces1 = [...Array(total1).keys()].map(i => i === total1 - 1 ? 0 : i + 1);
+      const moves = 12;
+      for (let k = 0; k < moves; k++) {
+        const emptyIdx = pieces1.indexOf(0);
+        const r = Math.floor(emptyIdx / size1), c = emptyIdx % size1;
+        const neighbors = [];
+        if (r > 0) neighbors.push(emptyIdx - size1);
+        if (r < size1 - 1) neighbors.push(emptyIdx + size1);
+        if (c > 0) neighbors.push(emptyIdx - 1);
+        if (c < size1 - 1) neighbors.push(emptyIdx + 1);
+        const swapIdx = neighbors[Math.floor(Math.random() * neighbors.length)];
+        [pieces1[emptyIdx], pieces1[swapIdx]] = [pieces1[swapIdx], pieces1[emptyIdx]];
+      }
+      renderPuzzle1();
+    }
+    function renderPuzzle1(){
+      const grid = document.getElementById('puzzle1'); grid.innerHTML='';
+      pieces1.forEach((num,idx)=>{
+        const div=document.createElement('div'); div.className='piece';
+        if(num===0) div.classList.add('empty');
+        else {
+          const row=Math.floor((num-1)/size1), col=(num-1)%size1;
+          div.style.backgroundPosition=`-${col*150}px -${row*150}px`;
+          div.onclick=()=>movePiece1(idx);
+        }
+        grid.appendChild(div);
+      });
+    }
+    function movePiece1(idx){
+      const emptyIdx=pieces1.indexOf(0);
+      const r1=Math.floor(idx/size1), c1=idx%size1;
+      const r2=Math.floor(emptyIdx/size1), c2=emptyIdx%size1;
+      if(Math.abs(r1-r2)+Math.abs(c1-c2)===1){
+        [pieces1[idx],pieces1[emptyIdx]]=[pieces1[emptyIdx],pieces1[idx]];
+        renderPuzzle1();
+        if(pieces1.every((v,i)=>v===(i===total1-1?0:i+1))){
+          document.getElementById('btn1').style.display='inline-block';
+          document.getElementById('btn1').onclick=()=>showStep(2);
+        }
+      }
+    }
+    function isSolvable(arr){ let inv=0; arr.forEach((v,i)=>{ if(v) for(let j=i+1;j<arr.length;j++) if(arr[j]&&arr[j]<v)inv++; }); return inv%2===0; }
+    setupPuzzle1();
+
+    const icons=['🍼','👶','🎀','🚗','🧸','👟'];
+    let cards=[], firstCard=null, lock=false;
+    function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+    function initMemory(){cards=icons.concat(icons);shuffle(cards);const g=document.getElementById('memory');g.innerHTML='';cards.forEach(icon=>{const c=document.createElement('div');c.className='card';c.dataset.icon=icon;c.onclick=()=>flipCard(c);g.appendChild(c);});}
+    function flipCard(c){if(lock||c.classList.contains('flipped'))return;c.classList.add('flipped');c.textContent=c.dataset.icon;if(!firstCard)firstCard=c;else{lock=true;if(c.dataset.icon===firstCard.dataset.icon){setTimeout(()=>{c.classList.add('matched');firstCard.classList.add('matched');resetMemory();},500);}else{setTimeout(()=>{c.classList.remove('flipped');firstCard.classList.remove('flipped');c.textContent='';firstCard.textContent='';resetMemory();},800);}}}
+    function resetMemory(){if(document.querySelectorAll('.matched').length===cards.length){document.getElementById('btn2').style.display='inline-block';document.getElementById('btn2').onclick=()=>showStep(3);}firstCard=null;lock=false;}
+    initMemory();
+
+    document.getElementById('btn3').onclick=()=>{const e=+document.getElementById('ans3').value; if(e===9)showStep(4);else alert('Incorrecto');};
+
+    const r=document.getElementById('r'),g=document.getElementById('g'),b=document.getElementById('b');
+    const preview=document.getElementById('rgb-preview'),target=document.getElementById('rgb-target');
+    function hexToIndex(h){return Math.round(parseInt(h,16)/255*4);} const tR=hexToIndex(originalColor.substr(1,2)),tG=hexToIndex(originalColor.substr(3,2)),tB=hexToIndex(originalColor.substr(5,2));
+    const dR=Math.round(tR/4*255),dG=Math.round(tG/4*255),dB=Math.round(tB/4*255); target.style.background=`rgb(${dR},${dG},${dB})`;
+    function updatePreview(){const rv=Math.round((r.value/4)*255),gv=Math.round((g.value/4)*255),bv=Math.round((b.value/4)*255);preview.style.background=`rgb(${rv},${gv},${bv})`;} [r,g,b].forEach(sl=>sl.oninput=updatePreview);
+    document.getElementById('btn4').onclick=()=>{if(+r.value===tR&&+g.value===tG&&+b.value===tB){showStep(5);initHangman();}else alert('Incorrecto');};
+
+    const maxTries=10;let tries,leftWord;
+    function initHangman(){tries=0;leftWord=plain.split('');document.getElementById('tries').textContent=maxTries-tries;document.getElementById('wordDisplay').textContent=leftWord.map(_=>'_').join(' ');const btns=document.getElementById('letterButtons');btns.innerHTML='';
+      'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>guess(l,b);btns.appendChild(b);});}
+    function guess(letter,button){button.disabled=true;let found=false;leftWord.forEach((l,i)=>{if(l===letter)found=true;});let disp=document.getElementById('wordDisplay').textContent.split(' ');leftWord.forEach((l,i)=>{if(l===letter)disp[i]=letter;});document.getElementById('wordDisplay').textContent=disp.join(' ');if(!found){tries++;document.getElementById('tries').textContent=maxTries-tries;}if(disp.join('')===plain)revealWin();else if(tries>=maxTries)revealLose();}
+    function revealWin(){document.getElementById('reveal').textContent=`¡Bravo! Es una ${gender.toUpperCase()}!`;document.getElementById('reveal').style.color=originalColor;}
+    function revealLose(){document.getElementById('reveal').textContent=`Se acabaron los intentos. Es una ${gender.toUpperCase()}.`;document.getElementById('reveal').style.color=originalColor;}
   </script>
 </body>
 </html>
