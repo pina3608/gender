@@ -76,7 +76,7 @@
   </div>
 
   <script>
-    const gender = "niña";
+    const gender = "niño";
     const originalColor = gender === "niña" ? "#FFC0CB" : "#ADD8E6";
     const plain = gender.toUpperCase();
 
@@ -148,12 +148,12 @@
     function updatePreview(){const rv=Math.round((r.value/4)*255),gv=Math.round((g.value/4)*255),bv=Math.round((b.value/4)*255);preview.style.background=`rgb(${rv},${gv},${bv})`;} [r,g,b].forEach(sl=>sl.oninput=updatePreview);
     document.getElementById('btn4').onclick=()=>{if(+r.value===tR&&+g.value===tG&&+b.value===tB){showStep(5);initHangman();}else alert('Incorrecto');};
 
-    const maxTries=10;let tries,leftWord;
+    const maxTries=12;let tries,leftWord;
     function initHangman(){tries=0;leftWord=plain.split('');document.getElementById('tries').textContent=maxTries-tries;document.getElementById('wordDisplay').textContent=leftWord.map(_=>'_').join(' ');const btns=document.getElementById('letterButtons');btns.innerHTML='';
       'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>guess(l,b);btns.appendChild(b);});}
     function guess(letter,button){button.disabled=true;let found=false;leftWord.forEach((l,i)=>{if(l===letter)found=true;});let disp=document.getElementById('wordDisplay').textContent.split(' ');leftWord.forEach((l,i)=>{if(l===letter)disp[i]=letter;});document.getElementById('wordDisplay').textContent=disp.join(' ');if(!found){tries++;document.getElementById('tries').textContent=maxTries-tries;}if(disp.join('')===plain)revealWin();else if(tries>=maxTries)revealLose();}
-    function revealWin(){document.getElementById('reveal').textContent=`¡Bravo! Es una ${gender.toUpperCase()}!`;document.getElementById('reveal').style.color=originalColor;}
-    function revealLose(){document.getElementById('reveal').textContent=`Se acabaron los intentos. Es una ${gender.toUpperCase()}.`;document.getElementById('reveal').style.color=originalColor;}
+    function revealWin(){document.getElementById('reveal').textContent=`¡Bravo! Es un ${gender.toUpperCase()}!`;document.getElementById('reveal').style.color=originalColor;}
+    function revealLose(){document.getElementById('reveal').textContent=`Se acabaron los intentos. Es un ${gender.toUpperCase()}.`;document.getElementById('reveal').style.color=originalColor;}
   </script>
 </body>
 </html>
